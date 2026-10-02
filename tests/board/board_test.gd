@@ -67,3 +67,18 @@ func test_calibrate_uses_the_latest_reading() -> void:
 	var ball_position := _ball(runner).global_position
 	assert_bool(board.tilt.is_calibrated()).is_true()
 	assert_float(Vector2(ball_position.x, ball_position.z).length()).is_less(0.1)
+
+
+func test_light_follows_the_tilt() -> void:
+	var runner := _board_runner()
+	var board := runner.scene() as Board
+	var sun: DirectionalLight3D = runner.find_child("Sun")
+	board.input_override = Vector3(0, 0, -TiltMapper.STANDARD_GRAVITY)
+	await runner.simulate_frames(2, 16)
+	var flat_direction := -sun.global_basis.z
+	assert_vector(flat_direction).is_equal_approx(Vector3.DOWN, Vector3.ONE * 0.01)
+	board.input_override = TiltMapper.keyboard_to_device(Vector2.RIGHT, 10.0)  # right edge lowered
+	await runner.simulate_frames(2, 16)
+	var tilted_direction := -sun.global_basis.z
+	assert_float(tilted_direction.x).is_greater(sin(deg_to_rad(10.0)))  # leans the same way, but more
+	assert_float(tilted_direction.y).is_less(0.0)

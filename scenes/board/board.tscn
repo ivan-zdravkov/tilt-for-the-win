@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scripts/board/board.gd" id="1_board"]
+[ext_resource type="Shader" path="res://scenes/board/ball.gdshader" id="2_ball"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_floor"]
 friction = 0.6
@@ -21,10 +22,9 @@ roughness = 0.85
 albedo_color = Color(0.36, 0.23, 0.12, 1)
 roughness = 0.9
 
-[sub_resource type="StandardMaterial3D" id="Material_ball"]
-albedo_color = Color(0.86, 0.87, 0.9, 1)
-metallic = 0.8
-roughness = 0.25
+[sub_resource type="ShaderMaterial" id="Material_ball"]
+render_priority = 0
+shader = ExtResource("2_ball")
 
 [sub_resource type="BoxShape3D" id="Shape_floor"]
 size = Vector3(9, 0.2, 16)
@@ -69,8 +69,13 @@ script = ExtResource("1_board")
 environment = SubResource("Environment_board")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
-rotation_degrees = Vector3(-60, 30, 0)
+unique_name_in_owner = true
+rotation_degrees = Vector3(-90, 0, 0)
 shadow_enabled = true
+shadow_bias = 0.03
+shadow_blur = 1.5
+directional_shadow_mode = 0
+directional_shadow_max_distance = 40.0
 
 [node name="Camera" type="Camera3D" parent="."]
 unique_name_in_owner = true

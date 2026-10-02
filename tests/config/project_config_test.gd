@@ -57,3 +57,12 @@ func test_tilt_sensors_are_enabled() -> void:
 	for sensor in ["gravity", "accelerometer"]:
 		assert_bool(ProjectSettings.get_setting("input_devices/sensors/enable_" + sensor, false)).override_failure_message(
 			"input_devices/sensors/enable_%s must be on, or Input reads zero on phones" % sensor).is_true()
+
+
+func test_phones_get_smooth_edges_and_sharp_shadows() -> void:
+	# The Mobile renderer has lower ".mobile" defaults that silently win on phones; the game looked pixelated without these.
+	assert_int(ProjectSettings.get_setting("rendering/anti_aliasing/quality/msaa_3d")).is_equal(Viewport.MSAA_4X)
+	assert_float(ProjectSettings.get_setting("rendering/scaling_3d/scale")).is_equal(1.0)
+	assert_int(ProjectSettings.get_setting("rendering/lights_and_shadows/directional_shadow/size.mobile")).is_equal(4096)
+	assert_int(ProjectSettings.get_setting(
+		"rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality.mobile")).is_greater(0)

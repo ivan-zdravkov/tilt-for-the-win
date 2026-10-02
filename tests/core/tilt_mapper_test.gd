@@ -97,3 +97,19 @@ func test_keyboard_directions_match_device_conventions() -> void:
 	assert_float(TiltMapper.keyboard_to_device(Vector2.UP).y).is_greater(0.0)  # top edge lowered
 	var tilted := TiltMapper.keyboard_to_device(Vector2.RIGHT, 20.0)
 	assert_float(rad_to_deg(acos(-tilted.z / G))).is_equal_approx(20.0, 0.01)
+
+
+func test_exaggerate_tilt_keeps_straight_down() -> void:
+	assert_vector(TiltMapper.exaggerate_tilt(Vector3.DOWN * G, 3.0)).is_equal_approx(Vector3.DOWN, Vector3.ONE * 0.001)
+	assert_vector(TiltMapper.exaggerate_tilt(Vector3.ZERO, 3.0)).is_equal(Vector3.DOWN)
+
+
+func test_exaggerate_tilt_scales_the_lean_up_to_the_cap() -> void:
+	var gravity := Vector3(0.1, -0.99, -0.05).normalized()
+	var leaned := TiltMapper.exaggerate_tilt(gravity, 2.0)
+	assert_float(leaned.x).is_equal_approx(gravity.x * 2.0, 0.001)
+	assert_float(leaned.z).is_equal_approx(gravity.z * 2.0, 0.001)
+	assert_float(leaned.length()).is_equal_approx(1.0, 0.001)
+	var capped := TiltMapper.exaggerate_tilt(gravity, 100.0, 0.7)
+	assert_float(Vector2(capped.x, capped.z).length()).is_equal_approx(0.7, 0.001)
+	assert_float(capped.y).is_less(0.0)

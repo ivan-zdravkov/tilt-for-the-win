@@ -8,6 +8,9 @@ const BOARD_SIZE := Vector2(9.0, 16.0)
 const BALL_START := Vector3(0, 0.4, 0)
 
 @export var camera_margin := 0.4
+## How much more the overhead light leans than the phone does. The light hangs "straight above" in the real
+## world, so it shines along gravity; exaggerating that makes the shadows visibly swing as you tilt.
+@export var light_tilt_factor := 2.5
 
 var tilt := TiltMapper.new()
 ## When set (a device-space gravity Vector3), replaces sensor/keyboard input. Used by tests.
@@ -22,6 +25,7 @@ var _default_gravity: float
 
 @onready var _camera: Camera3D = %Camera
 @onready var _ball: RigidBody3D = %Ball
+@onready var _sun: DirectionalLight3D = %Sun
 @onready var _debug_label: Label = %DebugLabel
 
 
@@ -52,6 +56,7 @@ func _physics_process(delta: float) -> void:
 	var space := get_world_3d().space
 	PhysicsServer3D.area_set_param(space, PhysicsServer3D.AREA_PARAM_GRAVITY_VECTOR, world_gravity.normalized())
 	PhysicsServer3D.area_set_param(space, PhysicsServer3D.AREA_PARAM_GRAVITY, world_gravity.length())
+	_aim_light()
 
 
 func _process(_delta: float) -> void:
@@ -89,6 +94,12 @@ func reset_ball() -> void:
 	_ball.linear_velocity = Vector3.ZERO
 	_ball.angular_velocity = Vector3.ZERO
 	_ball.global_position = BALL_START
+
+
+## Points the sun along (exaggerated) gravity, as if a lamp hung straight above the real-world table.
+func _aim_light() -> void:
+	var direction := TiltMapper.exaggerate_tilt(world_gravity, light_tilt_factor)
+	_sun.basis = Basis.looking_at(direction, Vector3.FORWARD)
 
 
 func _read_device_gravity() -> Vector3:

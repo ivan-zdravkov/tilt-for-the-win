@@ -59,6 +59,18 @@ static func device_to_world(direction: Vector3, tilt_sensitivity := 1.0, tilt_ca
 	return Vector3(planar.x, down, planar.y)
 
 
+## Tilts a world-space direction further away from straight down: the in-plane part is multiplied by `factor`
+## and capped at `cap`. Used to aim the overhead light along gravity, so small tilts still move the shadows visibly.
+static func exaggerate_tilt(direction: Vector3, factor: float, cap := 0.9) -> Vector3:
+	if direction.is_zero_approx():
+		return Vector3.DOWN
+	var unit := direction.normalized()
+	var planar := Vector2(unit.x, unit.z) * factor
+	if planar.length() > cap:
+		planar = planar.normalized() * cap
+	return Vector3(planar.x, -sqrt(maxf(1.0 - planar.length_squared(), 0.0)), planar.y)
+
+
 ## Simulates a device gravity reading from keyboard/gamepad input, for playing on desktop.
 ## `input` is `Input.get_vector(left, right, up, down)`: +X right, +Y down the screen.
 static func keyboard_to_device(input: Vector2, max_angle_degrees := 20.0) -> Vector3:
