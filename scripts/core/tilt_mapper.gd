@@ -59,16 +59,21 @@ static func device_to_world(direction: Vector3, tilt_sensitivity := 1.0, tilt_ca
 	return Vector3(planar.x, down, planar.y)
 
 
-## Tilts a world-space direction further away from straight down: the in-plane part is multiplied by `factor`
-## and capped at `cap`. Used to aim the overhead light along gravity, so small tilts still move the shadows visibly.
-static func exaggerate_tilt(direction: Vector3, factor: float, cap := 0.9) -> Vector3:
+## Tilts a world-space direction further away from straight down, along a smooth curve: about `factor` times the
+## original angle for small tilts, easing towards (but never reaching) `max_angle_degrees`, so it never stops abruptly.
+## Used to aim the overhead light along gravity, so the shadows visibly swing as the phone tilts.
+static func exaggerate_tilt(direction: Vector3, factor: float, max_angle_degrees := 80.0) -> Vector3:
 	if direction.is_zero_approx():
 		return Vector3.DOWN
 	var unit := direction.normalized()
-	var planar := Vector2(unit.x, unit.z) * factor
-	if planar.length() > cap:
-		planar = planar.normalized() * cap
-	return Vector3(planar.x, -sqrt(maxf(1.0 - planar.length_squared(), 0.0)), planar.y)
+	var planar := Vector2(unit.x, unit.z)
+	if planar.is_zero_approx():
+		return Vector3.DOWN
+	var angle := acos(clampf(-unit.y, -1.0, 1.0))
+	var max_angle := deg_to_rad(max_angle_degrees)
+	var leaned := max_angle * tanh(angle * factor / max_angle)
+	var horizontal := planar.normalized() * sin(leaned)
+	return Vector3(horizontal.x, -cos(leaned), horizontal.y)
 
 
 ## Simulates a device gravity reading from keyboard/gamepad input, for playing on desktop.

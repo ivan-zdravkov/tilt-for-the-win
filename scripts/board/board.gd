@@ -10,7 +10,7 @@ const BALL_START := Vector3(0, 0.4, 0)
 @export var camera_margin := 0.4
 ## How much more the overhead light leans than the phone does. The light hangs "straight above" in the real
 ## world, so it shines along gravity; exaggerating that makes the shadows visibly swing as you tilt.
-@export var light_tilt_factor := 2.5
+@export var light_tilt_factor := 1.6
 
 var tilt := TiltMapper.new()
 ## When set (a device-space gravity Vector3), replaces sensor/keyboard input. Used by tests.

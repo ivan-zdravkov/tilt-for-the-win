@@ -104,12 +104,25 @@ func test_exaggerate_tilt_keeps_straight_down() -> void:
 	assert_vector(TiltMapper.exaggerate_tilt(Vector3.ZERO, 3.0)).is_equal(Vector3.DOWN)
 
 
-func test_exaggerate_tilt_scales_the_lean_up_to_the_cap() -> void:
-	var gravity := Vector3(0.1, -0.99, -0.05).normalized()
-	var leaned := TiltMapper.exaggerate_tilt(gravity, 2.0)
-	assert_float(leaned.x).is_equal_approx(gravity.x * 2.0, 0.001)
-	assert_float(leaned.z).is_equal_approx(gravity.z * 2.0, 0.001)
+func _angle_from_down(direction: Vector3) -> float:
+	return rad_to_deg(direction.normalized().angle_to(Vector3.DOWN))
+
+
+func _tilted_down(degrees: float) -> Vector3:
+	return Vector3(sin(deg_to_rad(degrees)), -cos(deg_to_rad(degrees)), 0)
+
+
+func test_exaggerate_tilt_scales_small_tilts_by_the_factor() -> void:
+	var leaned := TiltMapper.exaggerate_tilt(_tilted_down(3.0), 2.0)
+	assert_float(_angle_from_down(leaned)).is_equal_approx(6.0, 0.1)
+	assert_float(leaned.x).is_greater(0.0)  # same direction as the tilt
 	assert_float(leaned.length()).is_equal_approx(1.0, 0.001)
-	var capped := TiltMapper.exaggerate_tilt(gravity, 100.0, 0.7)
-	assert_float(Vector2(capped.x, capped.z).length()).is_equal_approx(0.7, 0.001)
-	assert_float(capped.y).is_less(0.0)
+
+
+func test_exaggerate_tilt_keeps_growing_without_reaching_the_limit() -> void:
+	# Regression: a hard cap made the shadow stop moving past ~20 degrees of tilt.
+	var previous := 0.0
+	for degrees in [10.0, 20.0, 30.0, 45.0, 60.0, 80.0]:
+		var angle := _angle_from_down(TiltMapper.exaggerate_tilt(_tilted_down(degrees), 1.6, 80.0))
+		assert_float(angle).is_greater(previous + 1.0).is_less(80.0)
+		previous = angle
