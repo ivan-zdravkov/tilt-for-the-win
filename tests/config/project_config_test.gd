@@ -39,11 +39,11 @@ func test_bundle_ids_match_on_both_platforms() -> void:
 	assert_str(presets.get_value(ios + ".options", "application/bundle_identifier")).is_equal(BUNDLE_ID)
 
 
-func test_tests_and_test_framework_are_excluded_from_exports() -> void:
+func test_dev_only_files_are_excluded_from_exports() -> void:
 	var presets := _load_presets()
 	for platform in ["Android", "iOS"]:
 		var filter: String = presets.get_value(_section_for_platform(presets, platform), "exclude_filter", "")
-		assert_str(filter).contains("tests/*").contains("addons/gdUnit4/*")
+		assert_str(filter).contains("tests/*").contains("tools/*").contains("addons/gdUnit4/*")
 
 
 func test_screen_is_locked_to_portrait() -> void:
