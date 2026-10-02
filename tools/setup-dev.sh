@@ -6,13 +6,8 @@
 # Usage: tools/setup-dev.sh
 set -euo pipefail
 
-# Keep these in sync with .github/workflows (the CI uses the same versions).
-GODOT_VERSION="4.7.2"
-ANDROID_PLATFORM="android-35"
-ANDROID_BUILD_TOOLS="35.0.1"
-ANDROID_NDK="28.1.13356709"
-ANDROID_CMAKE="3.10.2.4988404"
-CMDLINE_TOOLS_ZIP="commandlinetools-linux-13114758_latest.zip"
+# shellcheck source=versions.env
+source "$(dirname "${BASH_SOURCE[0]}")/versions.env"
 
 OPT="$HOME/.local/opt"
 BIN="$HOME/.local/bin"

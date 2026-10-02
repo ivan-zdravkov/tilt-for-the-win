@@ -19,8 +19,8 @@ It also hosts the privacy policy, and `app-ads.txt` later. It's plain HTML/CSS w
   openssl plus the App Store Connect API, so no Mac is needed.
 - Note: Google Play's API cannot create a new app, so the **first** AAB upload is done by hand in Play Console.
 
-## D-008 · Test framework — Proposed: gdUnit4
-GDScript unit and scene tests, a headless CLI runner, a maintained GitHub Action and JUnit reports. GUT is the simpler alternative.
+## D-008 · Test framework — Decided: gdUnit4 6.2.1 (2026-10-02)
+GDScript unit and scene tests, a headless CLI runner (`tools/test.sh`), JUnit reports. Vendored in `addons/gdUnit4`.
 Test layers: pure logic (maze generator: solvable, deterministic per seed; timer formatting; ad-pacing rules) →
 scene tests (ball rolls downhill under simulated tilt, goal triggers) → CI export smoke tests.
 

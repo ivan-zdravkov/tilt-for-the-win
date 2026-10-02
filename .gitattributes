@@ -18,3 +18,7 @@
 *.otf  filter=lfs diff=lfs merge=lfs -text
 *.exr  filter=lfs diff=lfs merge=lfs -text
 *.hdr  filter=lfs diff=lfs merge=lfs -text
+
+# Vendored addons stay in plain git (small files, no LFS needed to run tests in CI).
+addons/**/*.png binary
+addons/** !filter
