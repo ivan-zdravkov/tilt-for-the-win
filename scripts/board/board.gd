@@ -13,6 +13,8 @@ var tilt := TiltMapper.new()
 ## When set (a device-space gravity Vector3), replaces sensor/keyboard input. Used by tests.
 var input_override: Variant = null
 var last_device_gravity := Vector3.ZERO
+## Where `last_device_gravity` came from: "override", "gravity sensor", "accelerometer" or "keyboard".
+var input_source := ""
 var world_gravity := Vector3.DOWN * TiltMapper.STANDARD_GRAVITY
 
 var _default_gravity_vector: Vector3
@@ -54,8 +56,8 @@ func _physics_process(delta: float) -> void:
 
 func _process(_delta: float) -> void:
 	if _debug_label.visible:
-		_debug_label.text = "sensor  %s\ngravity %s\nball    %s\nfps     %d%s" % [
-			_fmt(last_device_gravity), _fmt(world_gravity), _fmt(_ball.global_position),
+		_debug_label.text = "input   %s\nsensor  %s\ngravity %s\nball    %s\nfps     %d%s" % [
+			input_source, _fmt(last_device_gravity), _fmt(world_gravity), _fmt(_ball.global_position),
 			Engine.get_frames_per_second(), "\ncalibrated" if tilt.is_calibrated() else "",
 		]
 
@@ -91,10 +93,19 @@ func reset_ball() -> void:
 
 func _read_device_gravity() -> Vector3:
 	if input_override != null:
+		input_source = "override"
 		return input_override
+	# Sensors must be enabled in Project Settings > Input Devices > Sensors, or these read zero.
 	var sensor := Input.get_gravity()
 	if not sensor.is_zero_approx():
+		input_source = "gravity sensor"
 		return sensor
+	# Some phones have no gravity sensor; the raw accelerometer is noisier but the TiltMapper smooths it.
+	sensor = Input.get_accelerometer()
+	if not sensor.is_zero_approx():
+		input_source = "accelerometer"
+		return sensor
+	input_source = "keyboard"
 	return TiltMapper.keyboard_to_device(Input.get_vector(&"tilt_left", &"tilt_right", &"tilt_up", &"tilt_down"))
 
 

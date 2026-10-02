@@ -50,3 +50,10 @@ func test_screen_is_locked_to_portrait() -> void:
 	# Auto-rotation is unusable in a tilt game: lying the phone flat would flip the screen.
 	assert_int(ProjectSettings.get_setting("display/window/handheld/orientation")).is_equal(
 		DisplayServer.SCREEN_PORTRAIT)
+
+
+func test_tilt_sensors_are_enabled() -> void:
+	# Since Godot 4.4 mobile sensors are off by default; without these the board ignores tilting (bug found on Android).
+	for sensor in ["gravity", "accelerometer"]:
+		assert_bool(ProjectSettings.get_setting("input_devices/sensors/enable_" + sensor, false)).override_failure_message(
+			"input_devices/sensors/enable_%s must be on, or Input reads zero on phones" % sensor).is_true()
