@@ -1,0 +1,102 @@
+# Runs on every PR and every push to master: import, tests, Android debug APK, secret scan.
+# Uses the same scripts as local development (tools/*.sh) and the versions in tools/versions.env.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    name: Test & build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      checks: write         # publish the JUnit report as a check run
+      pull-requests: write  # ...and its summary on PRs
+    steps:
+      - uses: actions/checkout@v7
+
+      # Git LFS with a cache, to spare the free 10 GiB/month LFS bandwidth quota.
+      - name: List LFS objects
+        run: git lfs ls-files --long | cut -d ' ' -f1 | sort > .lfs-assets-id
+      - name: Restore LFS cache
+        uses: actions/cache@v6
+        with:
+          path: .git/lfs
+          key: lfs-${{ hashFiles('.lfs-assets-id') }}
+      - name: Pull LFS objects
+        run: git lfs pull
+
+      - name: Load tool versions
+        run: grep -E '^[A-Z_]+=' tools/versions.env >> "$GITHUB_ENV"
+
+      - name: Restore toolchain cache
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.local/opt
+            ~/.local/share/godot
+          key: toolchain-${{ runner.os }}-${{ hashFiles('tools/versions.env', 'tools/setup-dev.sh') }}
+
+      - name: Install toolchain (Godot, JDK 17, Android SDK)
+        run: |
+          WITH_NDK=0 tools/setup-dev.sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Import project
+        run: tools/godot.sh --headless --import
+
+      - name: Run tests
+        run: tools/test.sh
+
+      - name: Publish test report
+        if: ${{ !cancelled() }}
+        uses: mikepenz/action-junit-report@v6
+        with:
+          report_paths: build/test-results/**/results.xml
+          check_name: Test results
+          require_tests: true
+          include_passed: true
+          detailed_summary: true
+
+      - name: Upload HTML test report
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-report
+          path: build/test-results/
+          retention-days: 7
+
+      - name: Export Android debug APK
+        run: tools/export.sh android-debug
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: tilt-for-the-win-debug-apk
+          path: build/android/tilt-for-the-win-debug.apk
+          retention-days: 14
+          if-no-files-found: error
+
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

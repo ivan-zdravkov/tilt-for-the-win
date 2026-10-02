@@ -52,6 +52,14 @@ break everything into small, pick-up-able tasks.
   The "Remote Debugger: Unable to connect" errors in its output are expected.
 - `tools/export.sh android-debug`: debug APK in `build/android/` (`adb install -r <apk>` to sideload).
 
+## CI
+- `.github/workflows/ci.yml` (every PR + push to master): toolchain via `WITH_NDK=0 tools/setup-dev.sh` (cached) →
+  import → `tools/test.sh` (JUnit published as the "Test results" check) → debug APK artifact `tilt-for-the-win-debug-apk`.
+  A separate "Secret scan" job runs Gitleaks. Takes about 1.5 min cold, under 1 min warm.
+- `master` is protected by the "Protect master" ruleset: PR required (0 approvals), checks "Test & build" and
+  "Secret scan" must pass, no force pushes or deletion. So every change goes through a branch + PR; Ivan merges.
+- Watch a run: `gh run watch <id> -R ivan-zdravkov/tilt-for-the-win --exit-status`.
+
 ## Code & test conventions
 - GDScript with static types everywhere. Game logic lives in plain `RefCounted` classes under `scripts/core/`
   (`class_name`, no scene dependencies) so it can be unit-tested; node scripts stay thin.
