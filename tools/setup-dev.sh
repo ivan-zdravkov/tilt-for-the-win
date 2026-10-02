@@ -4,6 +4,7 @@
 # like Bazzite). Safe to re-run: already-installed pieces are skipped.
 #
 # Usage: tools/setup-dev.sh
+#        WITH_NDK=0 tools/setup-dev.sh   # skip NDK + CMake (only needed for Gradle builds); used by CI
 set -euo pipefail
 
 # shellcheck source=versions.env
@@ -82,9 +83,9 @@ if [[ ! -x "$SDKMANAGER" ]]; then
 fi
 log "Installing Android SDK packages (accepting licenses)"
 yes | "$SDKMANAGER" --sdk_root="$ANDROID_SDK" --licenses >/dev/null || true
-"$SDKMANAGER" --sdk_root="$ANDROID_SDK" \
-  "platform-tools" "build-tools;$ANDROID_BUILD_TOOLS" "platforms;$ANDROID_PLATFORM" \
-  "cmdline-tools;latest" "cmake;$ANDROID_CMAKE" "ndk;$ANDROID_NDK"
+packages=("platform-tools" "build-tools;$ANDROID_BUILD_TOOLS" "platforms;$ANDROID_PLATFORM" "cmdline-tools;latest")
+[[ "${WITH_NDK:-1}" == "1" ]] && packages+=("cmake;$ANDROID_CMAKE" "ndk;$ANDROID_NDK")
+"$SDKMANAGER" --sdk_root="$ANDROID_SDK" "${packages[@]}"
 ln -sf "$ANDROID_SDK/platform-tools/adb" "$BIN/adb"
 
 # --- Debug keystore (local debug builds only; the release keystore never lives on disk in the repo) -
