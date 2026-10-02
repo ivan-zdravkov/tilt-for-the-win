@@ -1,0 +1,23 @@
+Copyright (c) 2026 Ivan Zdravkov. All rights reserved.
+
+"Tilt for the Win" — including its source code, levels, level-generation algorithms, art, audio, text,
+name and logo — is proprietary software owned by Ivan Zdravkov.
+
+This repository is publicly visible for transparency and reference only. Making it visible does NOT
+grant any license. Unless you have the copyright holder's prior written permission, you may not:
+
+  - copy, reproduce, or redistribute this software or any part of it;
+  - modify it, or create derivative works based on it;
+  - publish, sell, sublicense, or otherwise commercially exploit it;
+  - publish this game, or a substantially similar game built from this code or these assets,
+    on any app store or platform.
+
+The only permissions granted are those you need to view this repository on GitHub and to fork it
+within GitHub, as required by the GitHub Terms of Service. A fork grants no other rights.
+
+Third-party components (for example the Godot Engine, which is MIT-licensed, and any plugins or assets)
+remain under their own licenses. Their notices are listed in THIRD_PARTY_NOTICES.md.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.
+
+For licensing inquiries: ivan@zdravkov.dev
