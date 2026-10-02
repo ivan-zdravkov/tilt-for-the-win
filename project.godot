@@ -12,6 +12,7 @@ run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 boot_splash/bg_color=Color(0.85, 0.63, 0.4, 1)
 config/icon="res://icon.svg"
+config/quit_on_go_back=false
 
 [autoload]
 
@@ -32,11 +33,22 @@ window/handheld/orientation=1
 
 enabled=PackedStringArray("res://addons/gdUnit4/plugin.cfg")
 
+[input_devices]
+
+sensors/enable_accelerometer=true
+sensors/enable_gravity=true
+
 [physics]
 
+common/physics_ticks_per_second=120
 3d/physics_engine="Jolt Physics"
 
 [rendering]
 
 renderer/rendering_method="mobile"
+anti_aliasing/quality/msaa_3d=2
+lights_and_shadows/directional_shadow/size=4096
+lights_and_shadows/directional_shadow/size.mobile=4096
+lights_and_shadows/directional_shadow/soft_shadow_filter_quality=3
+lights_and_shadows/directional_shadow/soft_shadow_filter_quality.mobile=2
 textures/vram_compression/import_etc2_astc=true

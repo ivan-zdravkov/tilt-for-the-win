@@ -39,14 +39,30 @@ func test_bundle_ids_match_on_both_platforms() -> void:
 	assert_str(presets.get_value(ios + ".options", "application/bundle_identifier")).is_equal(BUNDLE_ID)
 
 
-func test_tests_and_test_framework_are_excluded_from_exports() -> void:
+func test_dev_only_files_are_excluded_from_exports() -> void:
 	var presets := _load_presets()
 	for platform in ["Android", "iOS"]:
 		var filter: String = presets.get_value(_section_for_platform(presets, platform), "exclude_filter", "")
-		assert_str(filter).contains("tests/*").contains("addons/gdUnit4/*")
+		assert_str(filter).contains("tests/*").contains("tools/*").contains("addons/gdUnit4/*")
 
 
 func test_screen_is_locked_to_portrait() -> void:
 	# Auto-rotation is unusable in a tilt game: lying the phone flat would flip the screen.
 	assert_int(ProjectSettings.get_setting("display/window/handheld/orientation")).is_equal(
 		DisplayServer.SCREEN_PORTRAIT)
+
+
+func test_tilt_sensors_are_enabled() -> void:
+	# Since Godot 4.4 mobile sensors are off by default; without these the board ignores tilting (bug found on Android).
+	for sensor in ["gravity", "accelerometer"]:
+		assert_bool(ProjectSettings.get_setting("input_devices/sensors/enable_" + sensor, false)).override_failure_message(
+			"input_devices/sensors/enable_%s must be on, or Input reads zero on phones" % sensor).is_true()
+
+
+func test_phones_get_smooth_edges_and_sharp_shadows() -> void:
+	# The Mobile renderer has lower ".mobile" defaults that silently win on phones; the game looked pixelated without these.
+	assert_int(ProjectSettings.get_setting("rendering/anti_aliasing/quality/msaa_3d")).is_equal(Viewport.MSAA_4X)
+	assert_float(ProjectSettings.get_setting("rendering/scaling_3d/scale")).is_equal(1.0)
+	assert_int(ProjectSettings.get_setting("rendering/lights_and_shadows/directional_shadow/size.mobile")).is_equal(4096)
+	assert_int(ProjectSettings.get_setting(
+		"rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality.mobile")).is_greater(0)

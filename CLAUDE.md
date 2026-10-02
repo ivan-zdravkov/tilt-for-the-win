@@ -51,6 +51,8 @@ break everything into small, pick-up-able tasks.
 - `tools/test.sh [-a res://tests/<dir>]`: headless gdUnit4 run; exit 0 = green. JUnit XML + HTML in `build/test-results/report_1/`.
   The "Remote Debugger: Unable to connect" errors in its output are expected.
 - `tools/export.sh android-debug`: debug APK in `build/android/` (`adb install -r <apk>` to sideload).
+- `tools/screenshot.sh res://scenes/x.tscn out.png`: render a scene to PNG so Claude can look at the UI (needs the desktop
+  session). Don't use `--write-movie` for this: it doesn't capture CanvasLayer UI.
 
 ## CI
 - `.github/workflows/ci.yml` (every PR + push to master): toolchain via `WITH_NDK=0 tools/setup-dev.sh` (cached) →
@@ -67,7 +69,11 @@ break everything into small, pick-up-able tasks.
   extend `GdUnitTestSuite`, and are named `test_<behaviour>`. Scene tests use `scene_runner()` + `simulate_frames()`.
 - `tests/config/` holds guard tests for things that must never drift (bundle ID, no credentials in `export_presets.cfg`,
   portrait lock). Every bug fix gets a regression test.
-- Autoloads: `Game` (flow/state) and `Services` (facade for EOS/ads, so tests can fake them).
+- Autoloads: `Game` (flow/state, input actions defined in code, `Game.go_to(scene)`) and `Services` (facade for EOS/ads,
+  so tests can fake them).
+- Tilt: `TiltMapper` (device gravity → world gravity; calibration, smoothing, sensitivity) drives the physics space's
+  gravity in `Board`; desktop uses WASD/arrows (C = calibrate, F3 = debug). Tests drive `Board.input_override`.
+  World axes: board in XZ, camera looks down -Y, top of screen = -Z. iOS sensor axes still need verifying on a device.
 - `tests/` and `addons/gdUnit4/` are excluded from exports.
 
 ## Conventions
