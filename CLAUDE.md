@@ -44,6 +44,24 @@ break everything into small, pick-up-able tasks.
 - `gh` interactive auth flows must be run by Ivan in a real terminal (the `!` shell is non-interactive).
 - Hardware: 12 cores, 30 GB RAM, AMD RX 9060 XT. Test devices: an iPhone and Android phones.
 
+## Commands
+- `tools/setup-dev.sh`: install/update the toolchain (versions in `tools/versions.env`, the single source of truth).
+- `tools/godot.sh <args>`: run the pinned Godot against the project (fails on a version mismatch).
+  `tools/godot.sh --headless --import` re-imports; `tools/godot.sh -e` opens the editor.
+- `tools/test.sh [-a res://tests/<dir>]`: headless gdUnit4 run; exit 0 = green. JUnit XML + HTML in `build/test-results/report_1/`.
+  The "Remote Debugger: Unable to connect" errors in its output are expected.
+- `tools/export.sh android-debug`: debug APK in `build/android/` (`adb install -r <apk>` to sideload).
+
+## Code & test conventions
+- GDScript with static types everywhere. Game logic lives in plain `RefCounted` classes under `scripts/core/`
+  (`class_name`, no scene dependencies) so it can be unit-tested; node scripts stay thin.
+- Tests mirror the source tree under `tests/` (`tests/core/time_format_test.gd` tests `scripts/core/time_format.gd`),
+  extend `GdUnitTestSuite`, and are named `test_<behaviour>`. Scene tests use `scene_runner()` + `simulate_frames()`.
+- `tests/config/` holds guard tests for things that must never drift (bundle ID, no credentials in `export_presets.cfg`,
+  portrait lock). Every bug fix gets a regression test.
+- Autoloads: `Game` (flow/state) and `Services` (facade for EOS/ads, so tests can fake them).
+- `tests/` and `addons/gdUnit4/` are excluded from exports.
+
 ## Conventions
 - Default branch: `master`. Work on branches and open PRs; don't commit or push unless asked.
 - Binary assets go through Git LFS (`.gitattributes`).
